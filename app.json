@@ -43,6 +43,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "70dcef8d-c202-4a61-a3eb-5b7e6ee3fb94"
+      }
+    },
+    "owner": "kryptom"
   }
 }
