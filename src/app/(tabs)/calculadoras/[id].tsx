@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { GallinaPosturaScreen } from '@features/calculators/screens/GallinaPosturaScreen';
 import { PolloEngordeScreen } from '@features/calculators/screens/PolloEngordeScreen';
 import { EmptyState } from '@features/shared/components/EmptyState';
 import { useTheme } from '@theme/index';
@@ -16,6 +17,10 @@ export default function CalculadoraDetalle(): JSX.Element {
 
   if (id === 'pollo-engorde') {
     return <PolloEngordeScreen />;
+  }
+
+  if (id === 'gallina-postura') {
+    return <GallinaPosturaScreen />;
   }
 
   return (

@@ -13,7 +13,7 @@ export const CALCULATOR_OPTIONS: CalculatorOption[] = [
     title: 'Gallina de Postura',
     description: 'Sugerencias por semana, control de peso e insumos',
     emoji: '🥚',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'porcicultura',

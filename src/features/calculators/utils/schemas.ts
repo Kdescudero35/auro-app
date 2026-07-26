@@ -22,6 +22,16 @@ export const polloEngordeSchema = z.object({
 
 export type PolloEngordeFormValues = z.infer<typeof polloEngordeSchema>;
 
+export const posturaSchema = z.object({
+  numeroAves: positiveInt('Número de aves').max(1_000_000, 'Valor demasiado alto').optional(),
+  edadSemanas: positiveInt('Edad').max(100, 'La edad máxima es 100 semanas').optional(),
+  pesoGramos: positiveNumber('Peso').max(10_000, 'Valor demasiado alto').optional(),
+  consumoAlimentoGramos: positiveNumber('Consumo de alimento').max(1_000, 'Valor demasiado alto').optional(),
+  diasTratamiento: positiveInt('Días de tratamiento').max(700, 'Máximo 700 días').optional(),
+});
+
+export type PosturaFormValues = z.infer<typeof posturaSchema>;
+
 export const quotationClientSchema = z.object({
   clientName: z
     .string()

@@ -1,10 +1,14 @@
 import { DATOS_POLLO_ENGORDE } from '../data/datosPolloEngorde';
 import type { SexoPollo } from '../data/datosPolloEngorde';
+import { DATOS_POSTURA } from '../data/datosPostura';
 import type {
   DosageResult,
   PolloEngordeCalculations,
   PolloEngordeInput,
   PolloEngordeProduct,
+  PosturaCalculations,
+  PosturaInput,
+  PosturaProduct,
 } from '../types';
 
 const safe = (v: number): number => (Number.isFinite(v) && !Number.isNaN(v) ? v : 0);
@@ -112,6 +116,13 @@ export function calculateDosage(
       N = K * G;
       formulaTexto = `Dosis (${K}) x ${G} aves = ${fmt(N)}`;
       break;
+
+    case 'dosis_por_peso': {
+      const Q = (K / 1000) * H;
+      N = Q * G;
+      formulaTexto = `(Dosis (${K}/1000) x Peso (${H}g)) x ${G} aves = ${fmt(N)}`;
+      break;
+    }
   }
 
   const O = N * F;
@@ -122,6 +133,70 @@ export function calculateDosage(
     unidad: product.formaAdministracion === 'Premix' ? 'g' : 'mL',
     formulaTexto,
   };
+}
+
+export function getPosturaSuggestionByAge(
+  edadSemanas: number,
+): { peso: number; alimento: number; agua: number; pesoHuevo: number; porcentajePostura: number } {
+  const edad = Math.max(1, Math.min(100, Math.round(edadSemanas)));
+  const entry = DATOS_POSTURA.find((d) => d.edad === edad);
+  if (entry) {
+    return {
+      peso: entry.pesoCorporal,
+      alimento: entry.consumoAlimento,
+      agua: entry.consumoAlimento * 2,
+      pesoHuevo: entry.pesoHuevo,
+      porcentajePostura: entry.porcentajePostura,
+    };
+  }
+  let closest = DATOS_POSTURA[0];
+  for (const d of DATOS_POSTURA) {
+    if (d.edad <= edad) closest = d;
+    else break;
+  }
+  return {
+    peso: closest.pesoCorporal,
+    alimento: closest.consumoAlimento,
+    agua: closest.consumoAlimento * 2,
+    pesoHuevo: closest.pesoHuevo,
+    porcentajePostura: closest.porcentajePostura,
+  };
+}
+
+export function calculatePostura(input: PosturaInput): PosturaCalculations {
+  const numAves = safe(input.numeroAves);
+  const consumoAlimentoG = safe(input.consumoAlimentoGramos);
+  const consumoAguaMl = consumoAlimentoG * 2;
+
+  const consumoAlimentoDiarioKg = (numAves * consumoAlimentoG) / 1000;
+  const consumoAguaDiarioLitros = (numAves * consumoAguaMl) / 1000;
+
+  const sug = getPosturaSuggestionByAge(safe(input.edadSemanas));
+
+  return {
+    consumoAguaMlAve: consumoAguaMl,
+    consumoAlimentoDiarioKg,
+    consumoAguaDiarioLitros,
+    totalAves: numAves,
+    pesoSugerido: sug.peso,
+    consumoAlimentoSugerido: sug.alimento,
+    consumoAguaSugerido: sug.agua,
+    pesoHuevoSugerido: sug.pesoHuevo,
+    porcentajePosturaSugerido: sug.porcentajePostura,
+  };
+}
+
+export function calculatePosturaDosage(
+  product: PosturaProduct,
+  context: {
+    consumoAlimentoDiarioKg: number;
+    consumoAguaDiarioLitros: number;
+    diasTratamiento: number;
+    pesoGramos: number;
+    numeroAves: number;
+  },
+): DosageResult {
+  return calculateDosage(product as unknown as PolloEngordeProduct, context);
 }
 
 const fmt = (v: number): string => (Number.isInteger(v) ? v.toString() : v.toFixed(2));

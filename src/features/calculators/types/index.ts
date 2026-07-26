@@ -6,7 +6,8 @@ export type TipoCalculo =
   | 'concentracion'
   | 'alimento_directo'
   | 'dosis_por_ave'
-  | 'dosis_por_ave_directo';
+  | 'dosis_por_ave_directo'
+  | 'dosis_por_peso';
 
 export interface PolloEngordeProduct {
   id: string;
@@ -51,6 +52,45 @@ export interface DosageResult {
   totalTratamiento: number;
   unidad: string;
   formulaTexto: string;
+}
+
+export interface PosturaProduct {
+  id: string;
+  nombre: string;
+  indicacionUso: string;
+  formaAdministracion: 'En agua' | 'Premix';
+  diasTratamientoSugeridos: string;
+  dosis: number;
+  tipoCalculo: TipoCalculo;
+  concentracion?: number;
+  presentaciones: string[];
+  principioActivo: string;
+  composicionGarantizada: string;
+  indicacionesUso: string;
+  dosisTexto: string;
+  tiempoRetiro: string;
+  precauciones: string;
+  contraindicaciones: string;
+}
+
+export interface PosturaInput {
+  numeroAves: number;
+  edadSemanas: number;
+  pesoGramos: number;
+  consumoAlimentoGramos: number;
+  diasTratamiento: number;
+}
+
+export interface PosturaCalculations {
+  consumoAguaMlAve: number;
+  consumoAlimentoDiarioKg: number;
+  consumoAguaDiarioLitros: number;
+  totalAves: number;
+  pesoSugerido: number;
+  consumoAlimentoSugerido: number;
+  consumoAguaSugerido: number;
+  pesoHuevoSugerido: number;
+  porcentajePosturaSugerido: number;
 }
 
 export interface CalculatorOption {
