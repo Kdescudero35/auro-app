@@ -38,7 +38,7 @@ export function ProductSearch({
 
   const handleChange = (text: string): void => {
     setQuery(text);
-    setOpen(text.length > 0);
+    setOpen(true);
     if (text.length === 0 && selected) {
       onClear();
     }
@@ -50,10 +50,10 @@ export function ProductSearch({
         label="Buscador predictivo de productos"
         value={query}
         onChangeText={handleChange}
-        placeholder="Escribe el nombre del producto..."
+        placeholder="Busca o selecciona un producto..."
         autoCorrect={false}
         autoCapitalize="none"
-        onFocus={() => query.length > 0 && setOpen(true)}
+        onFocus={() => setOpen(true)}
         rightSlot={
           query.length > 0 ? (
             <Pressable

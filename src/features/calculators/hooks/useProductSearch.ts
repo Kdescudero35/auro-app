@@ -23,7 +23,7 @@ export function usePolloEngordeProductSearch(query: string): {
 
   const results = useMemo(() => {
     const q = normalize(debounced);
-    if (!q) return [];
+    if (!q) return POLLO_ENGORDE_CATALOG;
     return POLLO_ENGORDE_CATALOG.filter(
       (p) =>
         normalize(p.nombre).includes(q) ||
