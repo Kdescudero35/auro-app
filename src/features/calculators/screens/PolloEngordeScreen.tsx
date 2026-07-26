@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
+import { useRef, useState } from 'react';
+import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { CalculatedParams } from '@features/calculators/components/CalculatedParams';
 import { DosageResult } from '@features/calculators/components/DosageResult';
@@ -18,13 +19,17 @@ export function PolloEngordeScreen(): JSX.Element {
   const router = useRouter();
   const { form, values, calculations } = usePolloEngordeCalculator();
   const [selected, setSelected] = useState<PolloEngordeProduct | null>(null);
+  const scrollRef = useRef<KeyboardAwareScrollView>(null);
+  const searchY = useRef(0);
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
+      ref={scrollRef}
       style={{ backgroundColor: theme.colors.background }}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+      bottomOffset={20}
     >
       <View style={styles.headerRow}>
         <Pressable
@@ -59,7 +64,12 @@ export function PolloEngordeScreen(): JSX.Element {
         />
 
         <CalculatedParams data={calculations} />
+      </View>
 
+      <View
+        style={{ marginTop: 18 }}
+        onLayout={(e) => { searchY.current = e.nativeEvent.layout.y; }}
+      >
         <Card>
           <SectionTitle title="Catálogo de productos" />
 
@@ -67,6 +77,9 @@ export function PolloEngordeScreen(): JSX.Element {
             selected={selected}
             onSelect={setSelected}
             onClear={() => setSelected(null)}
+            onSearchFocus={() => {
+              scrollRef.current?.scrollTo({ y: searchY.current, animated: true });
+            }}
           />
 
           {selected ? (
@@ -83,7 +96,7 @@ export function PolloEngordeScreen(): JSX.Element {
           ) : null}
         </Card>
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

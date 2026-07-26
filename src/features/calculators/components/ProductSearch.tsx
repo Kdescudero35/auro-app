@@ -17,12 +17,14 @@ interface ProductSearchProps {
   selected: PolloEngordeProduct | null;
   onSelect: (product: PolloEngordeProduct) => void;
   onClear: () => void;
+  onSearchFocus?: () => void;
 }
 
 export function ProductSearch({
   selected,
   onSelect,
   onClear,
+  onSearchFocus,
 }: ProductSearchProps): JSX.Element {
   const theme = useTheme();
   const [query, setQuery] = useState('');
@@ -53,7 +55,10 @@ export function ProductSearch({
         placeholder="Busca o selecciona un producto..."
         autoCorrect={false}
         autoCapitalize="none"
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          setOpen(true);
+          onSearchFocus?.();
+        }}
         rightSlot={
           query.length > 0 ? (
             <Pressable

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useState, JSX } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import Toast from 'react-native-toast-message';
 
 import { pdfService } from '@features/pdf/services/pdf.service';
@@ -70,11 +71,12 @@ export function CotizadorScreen(): JSX.Element {
   }, [items, clientName, farmName, vendorName, total]);
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
       style={{ backgroundColor: theme.colors.background }}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+      bottomOffset={20}
     >
       <Card>
         <QuotationHeader total={total} />
@@ -124,7 +126,7 @@ export function CotizadorScreen(): JSX.Element {
           </View>
         ) : null}
       </Card>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
