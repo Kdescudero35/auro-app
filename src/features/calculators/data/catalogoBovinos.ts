@@ -451,7 +451,7 @@ export const BOVINO_CATALOG: BovinoProduct[] = [
   },
   {
     id: 'bov-29',
-    nombre: 'Ǫ-IVERMEC 3,50',
+    nombre: 'Q-IVERMEC 3,50',
     formaAdministracion: 'Inyectable/Oral',
     diasTratamientoSugeridos: 'Única dosis',
     dosis: 0.02,
@@ -515,7 +515,7 @@ export const BOVINO_CATALOG: BovinoProduct[] = [
   },
   {
     id: 'bov-33',
-    nombre: 'Ǫ-OXY 200 L.A',
+    nombre: 'Q-OXY 200 L.A',
     formaAdministracion: 'Inyectable/Oral',
     diasTratamientoSugeridos: 'Única dosis',
     dosis: 0.1,

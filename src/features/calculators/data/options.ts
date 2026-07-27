@@ -41,6 +41,6 @@ export const CALCULATOR_OPTIONS: CalculatorOption[] = [
     title: 'Bioseguridad',
     description: 'Desinfección de galpones, aspersión y sanitizantes',
     emoji: '🛡️',
-    enabled: false,
+    enabled: true,
   },
 ];

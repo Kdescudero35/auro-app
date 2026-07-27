@@ -9,6 +9,8 @@ import type {
   AcuiculturaEspecie,
   AcuiculturaInput,
   AcuiculturaProduct,
+  BioseguridadDosageResult,
+  BioseguridadProduct,
   BovinoCalculations,
   BovinoInput,
   BovinoProduct,
@@ -518,6 +520,47 @@ export function calculateAcuiculturaDosage(
     cantidadDiaria: K,
     totalTratamiento: K * D,
     unidad,
+    formulaTexto,
+  };
+}
+
+const PEDILUVIO_SOLUCION_FIJA_L = 15;
+
+/**
+ * Reproduce las fórmulas de la hoja CALCULADORA BIOSEGURIDAD (cols H, I, J):
+ *   area_general:    H = (m2 * constanteAplicacion) / factorUso
+ *   pediluvio_fijo:  H = 15 L (fijo, no depende de m2 — volumen estándar de un pediluvio)
+ *   en ambos casos:  J (producto) = (H * dosisUso) / 1000; I (agua) = H - J
+ * No hay columna de "días de tratamiento": el cálculo es para una sola aplicación.
+ */
+export function calculateBioseguridadDosage(
+  product: BioseguridadProduct,
+  context: { metrosCuadrados: number },
+): BioseguridadDosageResult {
+  const m2 = safe(context.metrosCuadrados);
+  const dosisUso = safe(product.dosisUso);
+
+  let H = 0;
+  let formulaTexto = '';
+
+  if (product.tipoCalculo === 'pediluvio_fijo') {
+    H = PEDILUVIO_SOLUCION_FIJA_L;
+    formulaTexto = `Volumen fijo de pediluvio (${PEDILUVIO_SOLUCION_FIJA_L} L), no depende del área`;
+  } else {
+    const K = safe(product.constanteAplicacion ?? 0);
+    const L = safe(product.factorUso ?? 1);
+    H = L > 0 ? (m2 * K) / L : 0;
+    formulaTexto = `(${fmt(m2)} m² x Constante (${K})) / Factor (${L}) = ${fmt(H)} L de solución`;
+  }
+
+  const J = (H * dosisUso) / 1000;
+  const I = H - J;
+
+  return {
+    cantidadSolucionL: H,
+    cantidadAguaL: I,
+    cantidadProducto: J,
+    unidadProducto: product.unidadProducto,
     formulaTexto,
   };
 }

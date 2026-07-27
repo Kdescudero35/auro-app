@@ -64,6 +64,13 @@ export const acuiculturaSchema = z.object({
 
 export type AcuiculturaFormValues = z.infer<typeof acuiculturaSchema>;
 
+export const bioseguridadSchema = z.object({
+  tipoProduccion: z.enum(['G. Porcícola', 'G. Postura', 'G. Pollo']),
+  metrosCuadrados: positiveNumber('Metros cuadrados').max(1_000_000, 'Valor demasiado alto').optional(),
+});
+
+export type BioseguridadFormValues = z.infer<typeof bioseguridadSchema>;
+
 export const quotationClientSchema = z.object({
   clientName: z
     .string()

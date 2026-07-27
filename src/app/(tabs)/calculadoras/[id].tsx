@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AcuiculturaScreen } from '@features/calculators/screens/AcuiculturaScreen';
+import { BioseguridadScreen } from '@features/calculators/screens/BioseguridadScreen';
 import { GallinaPosturaScreen } from '@features/calculators/screens/GallinaPosturaScreen';
 import { GanaderiaScreen } from '@features/calculators/screens/GanaderiaScreen';
 import { PolloEngordeScreen } from '@features/calculators/screens/PolloEngordeScreen';
@@ -36,6 +37,10 @@ export default function CalculadoraDetalle(): JSX.Element {
 
   if (id === 'acuicultura') {
     return <AcuiculturaScreen />;
+  }
+
+  if (id === 'bioseguridad') {
+    return <BioseguridadScreen />;
   }
 
   return (

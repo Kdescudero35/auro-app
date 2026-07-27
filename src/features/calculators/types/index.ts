@@ -235,6 +235,44 @@ export interface AcuiculturaCalculations {
   totalPeces: number;
 }
 
+export type BioseguridadTipoCalculo = 'area_general' | 'pediluvio_fijo';
+
+export type BioseguridadTipoProduccion = 'G. Porcícola' | 'G. Postura' | 'G. Pollo';
+
+export interface BioseguridadProduct {
+  id: string;
+  nombre: string;
+  indicacionUso: string;
+  tipoProduccion: BioseguridadTipoProduccion;
+  dosisUso: number;
+  diasTratamientoSugerido: string;
+  presentaciones: string[];
+  tipoCalculo: BioseguridadTipoCalculo;
+  constanteAplicacion?: number;
+  factorUso?: number;
+  unidadProducto: 'L' | 'kg';
+  principioActivo: string;
+  composicionGarantizada: string;
+  indicacionesUso: string;
+  dosisTexto: string;
+  tiempoRetiro: string;
+  precauciones: string;
+  contraindicaciones: string;
+}
+
+export interface BioseguridadInput {
+  tipoProduccion: BioseguridadTipoProduccion;
+  metrosCuadrados: number;
+}
+
+export interface BioseguridadDosageResult {
+  cantidadSolucionL: number;
+  cantidadAguaL: number;
+  cantidadProducto: number;
+  unidadProducto: 'L' | 'kg';
+  formulaTexto: string;
+}
+
 export interface CalculatorOption {
   id: string;
   title: string;
