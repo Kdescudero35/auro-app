@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { GallinaPosturaScreen } from '@features/calculators/screens/GallinaPosturaScreen';
 import { PolloEngordeScreen } from '@features/calculators/screens/PolloEngordeScreen';
+import { PorciculturaScreen } from '@features/calculators/screens/PorciculturaScreen';
 import { EmptyState } from '@features/shared/components/EmptyState';
 import { useTheme } from '@theme/index';
 
@@ -21,6 +22,10 @@ export default function CalculadoraDetalle(): JSX.Element {
 
   if (id === 'gallina-postura') {
     return <GallinaPosturaScreen />;
+  }
+
+  if (id === 'porcicultura') {
+    return <PorciculturaScreen />;
   }
 
   return (

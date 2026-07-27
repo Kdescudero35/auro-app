@@ -1,11 +1,15 @@
 import { DATOS_POLLO_ENGORDE } from '../data/datosPolloEngorde';
 import type { SexoPollo } from '../data/datosPolloEngorde';
+import { DATOS_PORCICULTURA, PORCICULTURA_CATEGORIAS } from '../data/datosPorcicultura';
 import { DATOS_POSTURA } from '../data/datosPostura';
 import type {
   DosageResult,
   PolloEngordeCalculations,
   PolloEngordeInput,
   PolloEngordeProduct,
+  PorciculturaCalculations,
+  PorciculturaInput,
+  PorciculturaProduct,
   PosturaCalculations,
   PosturaInput,
   PosturaProduct,
@@ -197,6 +201,140 @@ export function calculatePosturaDosage(
   },
 ): DosageResult {
   return calculateDosage(product as unknown as PolloEngordeProduct, context);
+}
+
+export function getPorciculturaSuggestionByAge(
+  input: { modoEdad: 'semana' | 'categoria'; edadSemanas: number; categoria?: PorciculturaInput['categoria'] },
+): { peso: number; alimento: number; agua: number; etapa: string } {
+  if (input.modoEdad === 'categoria' && input.categoria) {
+    const cat = PORCICULTURA_CATEGORIAS[input.categoria];
+    return { peso: cat.pesoKg, alimento: cat.consumoAlimentoKgDia, agua: cat.consumoAguaLitrosDia, etapa: cat.label };
+  }
+
+  const edad = Math.max(1, Math.min(22, Math.round(input.edadSemanas)));
+  const entry = DATOS_PORCICULTURA.find((d) => d.edadSemanas === edad);
+  if (entry) {
+    return {
+      peso: entry.pesoKg,
+      alimento: entry.consumoAlimentoKgDia,
+      agua: entry.consumoAguaLitrosDia,
+      etapa: entry.etapaProductiva,
+    };
+  }
+  const closest = DATOS_PORCICULTURA[0];
+  return { peso: closest.pesoKg, alimento: closest.consumoAlimentoKgDia, agua: closest.consumoAguaLitrosDia, etapa: closest.etapaProductiva };
+}
+
+export function calculatePorcicultura(input: PorciculturaInput): PorciculturaCalculations {
+  const numCerdos = safe(input.numeroCerdos);
+  const consumoAlimentoKgDia = safe(input.consumoAlimentoKgDia);
+  const consumoAguaLitrosDia = safe(input.consumoAguaLitrosDia);
+
+  const sug = getPorciculturaSuggestionByAge(input);
+
+  return {
+    consumoAlimentoTotalKgDia: numCerdos * consumoAlimentoKgDia,
+    consumoAguaTotalLitrosDia: numCerdos * consumoAguaLitrosDia,
+    totalCerdos: numCerdos,
+    pesoSugerido: sug.peso,
+    consumoAlimentoSugerido: sug.alimento,
+    consumoAguaSugerido: sug.agua,
+    etapaProductiva: sug.etapa,
+  };
+}
+
+/**
+ * Reproduce las fórmulas de la hoja CALCULADORA PORCICULTURA (cols N, O, K, L):
+ *   dosis_por_peso_simple:         N = E*G;        O = (N*J)/1000;              K = (O*D)*1000
+ *   dosis_por_peso_concentracion:  N = E*G;        O = ((N*J)/conc)/1000;       K = (O*D)*1000
+ *   dosis_por_alimento:            N = (E*F)/1000; O = (N*J)/1000;              K = (O*D)*1000
+ *   dosis_por_agua:                N = E*H;        O = (N*J)/1000;              K = (O*D)*1000
+ *   dosis_unica:                   K = J*E (dosis única, sin multiplicar por días)
+ *   dosis_alimento_unica:          N = (E*F)/1000; O = (N*J)/1000000;           K = O (AURORAC)
+ * donde E=numCerdos, G=pesoKg, F=consumoAlimentoKgDia, H=consumoAguaLitrosDia, J=dosis, D=diasTratamiento.
+ */
+export function calculatePorciculturaDosage(
+  product: PorciculturaProduct,
+  context: {
+    numeroCerdos: number;
+    pesoKg: number;
+    consumoAlimentoKgDia: number;
+    consumoAguaLitrosDia: number;
+    diasTratamiento: number;
+  },
+): DosageResult {
+  const J = safe(product.dosis);
+  const D = safe(context.diasTratamiento);
+  const E = safe(context.numeroCerdos);
+  const G = safe(context.pesoKg);
+  const F = safe(context.consumoAlimentoKgDia);
+  const H = safe(context.consumoAguaLitrosDia);
+  const conc = safe(product.concentracion ?? 0);
+
+  let K = 0;
+  let cantidadDiaria = 0;
+  let formulaTexto = '';
+
+  switch (product.tipoCalculo) {
+    case 'dosis_por_peso_simple': {
+      const N = E * G;
+      const O = (N * J) / 1000;
+      K = O * D * 1000;
+      cantidadDiaria = O * 1000;
+      formulaTexto = `(${E} cerdos x ${fmt(G)} kg x Dosis ${J}) / 1000 = ${fmt(cantidadDiaria)} / día`;
+      break;
+    }
+
+    case 'dosis_por_peso_concentracion': {
+      const N = E * G;
+      const O = conc > 0 ? (N * J) / conc / 1000 : 0;
+      K = O * D * 1000;
+      cantidadDiaria = O * 1000;
+      formulaTexto = `((${E} cerdos x ${fmt(G)} kg x Dosis ${J}) / Conc. ${conc}) / 1000 = ${fmt(cantidadDiaria)} / día`;
+      break;
+    }
+
+    case 'dosis_por_alimento': {
+      const N = (E * F) / 1000;
+      const O = (N * J) / 1000;
+      K = O * D * 1000;
+      cantidadDiaria = O * 1000;
+      formulaTexto = `((${E} cerdos x ${fmt(F)} kg alimento / 1000) x Dosis ${J}) / 1000 = ${fmt(cantidadDiaria)} / día`;
+      break;
+    }
+
+    case 'dosis_por_agua': {
+      const N = E * H;
+      const O = (N * J) / 1000;
+      K = O * D * 1000;
+      cantidadDiaria = O * 1000;
+      formulaTexto = `(${E} cerdos x ${fmt(H)} L agua x Dosis ${J}) / 1000 = ${fmt(cantidadDiaria)} / día`;
+      break;
+    }
+
+    case 'dosis_alimento_unica': {
+      const N = (E * F) / 1000;
+      const O = (N * J) / 1_000_000;
+      K = O;
+      cantidadDiaria = O;
+      formulaTexto = `(${E} cerdos x ${fmt(F)} kg alimento / 1000) x Dosis ${J} / 1.000.000 = ${fmt(K)} (dosis única)`;
+      break;
+    }
+
+    case 'dosis_unica': {
+      K = J * E;
+      cantidadDiaria = K;
+      formulaTexto = `Dosis ${J} x ${E} cerdos = ${fmt(K)} (dosis única, no requiere días de tratamiento)`;
+      break;
+    }
+  }
+
+  return {
+    cantidadDiaria,
+    totalTratamiento: K,
+    unidad: product.formaAdministracion === 'Premix' ? 'g' : 'mL',
+    formulaTexto,
+  };
 }
 
 const fmt = (v: number): string => (Number.isInteger(v) ? v.toString() : v.toFixed(2));

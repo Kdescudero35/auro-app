@@ -32,6 +32,19 @@ export const posturaSchema = z.object({
 
 export type PosturaFormValues = z.infer<typeof posturaSchema>;
 
+export const porciculturaSchema = z.object({
+  modoEdad: z.enum(['semana', 'categoria']),
+  numeroCerdos: positiveInt('Número de cerdos').max(1_000_000, 'Valor demasiado alto').optional(),
+  edadSemanas: positiveInt('Edad').max(22, 'La edad máxima es 22 semanas').optional(),
+  categoria: z.enum(['CERDA_VACIA', 'CERDA_GESTANTE', 'CERDA_LACTANTE', 'VERRACO']).optional(),
+  pesoKg: positiveNumber('Peso').max(500, 'Valor demasiado alto').optional(),
+  consumoAlimentoKgDia: positiveNumber('Consumo de alimento').max(50, 'Valor demasiado alto').optional(),
+  consumoAguaLitrosDia: positiveNumber('Consumo de agua').max(100, 'Valor demasiado alto').optional(),
+  diasTratamiento: positiveInt('Días de tratamiento').max(700, 'Máximo 700 días').optional(),
+});
+
+export type PorciculturaFormValues = z.infer<typeof porciculturaSchema>;
+
 export const quotationClientSchema = z.object({
   clientName: z
     .string()

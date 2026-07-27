@@ -93,6 +93,62 @@ export interface PosturaCalculations {
   porcentajePosturaSugerido: number;
 }
 
+export type PorciculturaTipoCalculo =
+  | 'dosis_por_peso_simple'
+  | 'dosis_por_peso_concentracion'
+  | 'dosis_por_alimento'
+  | 'dosis_por_agua'
+  | 'dosis_unica'
+  | 'dosis_alimento_unica';
+
+export interface PorciculturaProduct {
+  id: string;
+  nombre: string;
+  indicacionUso: string;
+  formaAdministracion: 'En agua' | 'Premix' | 'Inyectable/Oral';
+  diasTratamientoSugeridos: string;
+  dosis: number;
+  tipoCalculo: PorciculturaTipoCalculo;
+  concentracion?: number;
+  presentaciones: string[];
+  principioActivo: string;
+  composicionGarantizada: string;
+  indicacionesUso: string;
+  dosisTexto: string;
+  tiempoRetiro: string;
+  precauciones: string;
+  contraindicaciones: string;
+}
+
+export type PorciculturaModoEdad = 'semana' | 'categoria';
+
+export type PorciculturaCategoria =
+  | 'CERDA_VACIA'
+  | 'CERDA_GESTANTE'
+  | 'CERDA_LACTANTE'
+  | 'VERRACO';
+
+export interface PorciculturaInput {
+  modoEdad: PorciculturaModoEdad;
+  numeroCerdos: number;
+  edadSemanas: number;
+  categoria?: PorciculturaCategoria;
+  pesoKg: number;
+  consumoAlimentoKgDia: number;
+  consumoAguaLitrosDia: number;
+  diasTratamiento: number;
+}
+
+export interface PorciculturaCalculations {
+  consumoAlimentoTotalKgDia: number;
+  consumoAguaTotalLitrosDia: number;
+  totalCerdos: number;
+  pesoSugerido: number;
+  consumoAlimentoSugerido: number;
+  consumoAguaSugerido: number;
+  etapaProductiva: string;
+}
+
 export interface CalculatorOption {
   id: string;
   title: string;

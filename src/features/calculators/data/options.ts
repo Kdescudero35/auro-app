@@ -20,7 +20,7 @@ export const CALCULATOR_OPTIONS: CalculatorOption[] = [
     title: 'Porcicultura',
     description: 'Cálculos por corral, peso corporal y consumo',
     emoji: '🐷',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'ganaderia',
