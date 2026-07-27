@@ -1,8 +1,12 @@
+import { PARAMETROS_BOVINOS } from '../data/datosBovinos';
 import { DATOS_POLLO_ENGORDE } from '../data/datosPolloEngorde';
 import type { SexoPollo } from '../data/datosPolloEngorde';
 import { DATOS_PORCICULTURA, PORCICULTURA_CATEGORIAS } from '../data/datosPorcicultura';
 import { DATOS_POSTURA } from '../data/datosPostura';
 import type {
+  BovinoCalculations,
+  BovinoInput,
+  BovinoProduct,
   DosageResult,
   PolloEngordeCalculations,
   PolloEngordeInput,
@@ -331,6 +335,91 @@ export function calculatePorciculturaDosage(
 
   return {
     cantidadDiaria,
+    totalTratamiento: K,
+    unidad: product.formaAdministracion === 'Premix' ? 'g' : 'mL',
+    formulaTexto,
+  };
+}
+
+export function calculateBovino(input: BovinoInput): BovinoCalculations {
+  const numBovinos = safe(input.numeroBovinos);
+  const peso = safe(input.pesoPromedioKg);
+  const parametro = PARAMETROS_BOVINOS.find((p) => p.etapa === input.etapa) ?? PARAMETROS_BOVINOS[0];
+
+  return {
+    consumoMsSugeridoKgDia: peso * parametro.porcentajeMs,
+    consumoAguaSugeridoLitrosDia: peso * parametro.porcentajeAgua,
+    totalBovinos: numBovinos,
+  };
+}
+
+/**
+ * Reproduce las fórmulas de la hoja Calculadora Bovinos:
+ *   J (producto diario por animal) segun tipoCalculo:
+ *     dosis_por_peso:            J = dosis * pesoPromedioKg
+ *     dosis_por_consumo_ms:      J = dosis * (consumoMsKgDia / 1000)
+ *     dosis_por_agua:            J = dosis * consumoAguaLitrosDia
+ *     dosis_fija_x4:             J = dosis * 4
+ *     dosis_unica:               J = dosis
+ *     dosis_premix_sin_consumo:  J = dosis / 1000
+ *   K (total requerido) = J * diasTratamiento * numeroBovinos (igual para los 45 productos)
+ */
+export function calculateBovinoDosage(
+  product: BovinoProduct,
+  context: {
+    numeroBovinos: number;
+    pesoPromedioKg: number;
+    consumoMsKgDia: number;
+    consumoAguaLitrosDia: number;
+    diasTratamiento: number;
+  },
+): DosageResult {
+  const dosis = safe(product.dosis);
+  const D = safe(context.diasTratamiento);
+  const numBovinos = safe(context.numeroBovinos);
+  const peso = safe(context.pesoPromedioKg);
+  const consumoMs = safe(context.consumoMsKgDia);
+  const consumoAgua = safe(context.consumoAguaLitrosDia);
+
+  let J = 0;
+  let formulaTexto = '';
+
+  switch (product.tipoCalculo) {
+    case 'dosis_por_peso':
+      J = dosis * peso;
+      formulaTexto = `Dosis (${dosis}) x Peso (${fmt(peso)} kg) = ${fmt(J)} / animal / día`;
+      break;
+
+    case 'dosis_por_consumo_ms':
+      J = dosis * (consumoMs / 1000);
+      formulaTexto = `Dosis (${dosis}) x (Consumo MS (${fmt(consumoMs)} kg) / 1000) = ${fmt(J)} / animal / día`;
+      break;
+
+    case 'dosis_por_agua':
+      J = dosis * consumoAgua;
+      formulaTexto = `Dosis (${dosis}) x Consumo agua (${fmt(consumoAgua)} L) = ${fmt(J)} / animal / día`;
+      break;
+
+    case 'dosis_fija_x4':
+      J = dosis * 4;
+      formulaTexto = `Dosis (${dosis}) x 4 = ${fmt(J)} / animal (aplicacion intramamaria en los 4 cuartos)`;
+      break;
+
+    case 'dosis_unica':
+      J = dosis;
+      formulaTexto = `Dosis (${dosis}) = ${fmt(J)} / animal (dosis única)`;
+      break;
+
+    case 'dosis_premix_sin_consumo':
+      J = dosis / 1000;
+      formulaTexto = `Dosis (${dosis}) / 1000 = ${fmt(J)} / animal / día`;
+      break;
+  }
+
+  const K = J * D * numBovinos;
+
+  return {
+    cantidadDiaria: J,
     totalTratamiento: K,
     unidad: product.formaAdministracion === 'Premix' ? 'g' : 'mL',
     formulaTexto,

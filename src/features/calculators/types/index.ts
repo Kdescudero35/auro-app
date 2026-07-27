@@ -149,6 +149,46 @@ export interface PorciculturaCalculations {
   etapaProductiva: string;
 }
 
+export type BovinoTipoCalculo =
+  | 'dosis_por_peso'
+  | 'dosis_por_consumo_ms'
+  | 'dosis_por_agua'
+  | 'dosis_fija_x4'
+  | 'dosis_unica'
+  | 'dosis_premix_sin_consumo';
+
+export type BovinoEtapa = 'Ternero' | 'Levante' | 'Ceba' | 'Horro' | 'Vaca leche';
+
+export interface BovinoProduct {
+  id: string;
+  nombre: string;
+  formaAdministracion: 'En agua' | 'Premix' | 'Inyectable/Oral';
+  diasTratamientoSugeridos: string;
+  dosis: number;
+  tipoCalculo: BovinoTipoCalculo;
+  presentaciones: string[];
+  principioActivo: string;
+  composicionGarantizada: string;
+  indicacionesUso: string;
+  dosisTexto: string;
+  tiempoRetiro: string;
+  precauciones: string;
+  contraindicaciones: string;
+}
+
+export interface BovinoInput {
+  etapa: BovinoEtapa;
+  numeroBovinos: number;
+  pesoPromedioKg: number;
+  diasTratamiento: number;
+}
+
+export interface BovinoCalculations {
+  consumoMsSugeridoKgDia: number;
+  consumoAguaSugeridoLitrosDia: number;
+  totalBovinos: number;
+}
+
 export interface CalculatorOption {
   id: string;
   title: string;

@@ -45,6 +45,15 @@ export const porciculturaSchema = z.object({
 
 export type PorciculturaFormValues = z.infer<typeof porciculturaSchema>;
 
+export const bovinoSchema = z.object({
+  etapa: z.enum(['Ternero', 'Levante', 'Ceba', 'Horro', 'Vaca leche']),
+  numeroBovinos: positiveInt('Número de bovinos').max(1_000_000, 'Valor demasiado alto').optional(),
+  pesoPromedioKg: positiveNumber('Peso').max(1_500, 'Valor demasiado alto').optional(),
+  diasTratamiento: positiveInt('Días de tratamiento').max(700, 'Máximo 700 días').optional(),
+});
+
+export type BovinoFormValues = z.infer<typeof bovinoSchema>;
+
 export const quotationClientSchema = z.object({
   clientName: z
     .string()

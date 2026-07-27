@@ -27,7 +27,7 @@ export const CALCULATOR_OPTIONS: CalculatorOption[] = [
     title: 'Ganadería (Bovinos)',
     description: 'Consumo de Materia Seca CMS y productos inyectables',
     emoji: '🐄',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'acuicultura',
