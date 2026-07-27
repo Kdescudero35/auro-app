@@ -1,9 +1,14 @@
+import { DOLICAL_DOSIS_POR_ESPECIE } from '../data/datosAcuicultura';
 import { PARAMETROS_BOVINOS } from '../data/datosBovinos';
 import { DATOS_POLLO_ENGORDE } from '../data/datosPolloEngorde';
 import type { SexoPollo } from '../data/datosPolloEngorde';
 import { DATOS_PORCICULTURA, PORCICULTURA_CATEGORIAS } from '../data/datosPorcicultura';
 import { DATOS_POSTURA } from '../data/datosPostura';
 import type {
+  AcuiculturaCalculations,
+  AcuiculturaEspecie,
+  AcuiculturaInput,
+  AcuiculturaProduct,
   BovinoCalculations,
   BovinoInput,
   BovinoProduct,
@@ -422,6 +427,97 @@ export function calculateBovinoDosage(
     cantidadDiaria: J,
     totalTratamiento: K,
     unidad: product.formaAdministracion === 'Premix' ? 'g' : 'mL',
+    formulaTexto,
+  };
+}
+
+export function calculateAcuicultura(input: AcuiculturaInput): AcuiculturaCalculations {
+  const biomasa = safe(input.biomasaKg);
+  const porcentajeConsumo = safe(input.porcentajeConsumoDia);
+
+  return {
+    consumoAlimentoKgDia: biomasa * (porcentajeConsumo / 100),
+    totalPeces: safe(input.numeroPeces),
+  };
+}
+
+/**
+ * Reproduce las fórmulas de la hoja Calculadora Piscicultura (col K "Producto/día"):
+ *   dosis_por_alimento:         K = biomasaKg * (%consumoDia / 100) * dosis
+ *   dosis_por_agua_tabletas:    K = (volumenAguaTon / 10) * dosis
+ *   dosis_por_agua_especie:     K = volumenAguaTon * dosisSegunEspecie (DOLICAL, ver datosAcuicultura.ts)
+ *   dosis_por_pez:              K = dosis * numeroPeces
+ *   dosis_por_agua_superficie:  K = (((volumenAguaTon/1.5) + (4*SQRT(volumenAguaTon/1.5)*1.5)) / 10) * dosis
+ * L (total tratamiento) = K * diasTratamiento (igual para los 9 productos)
+ *
+ * Nota: Q-FLORFEN usa una dosis fija (2.5 g/kg alimento) en vez del VLOOKUP fragil
+ * del Excel original (ver docs/analisis-excel-aurogranja.md sección 7.3). SANITAS WP VET
+ * usa el volumen de agua propio del producto en vez de la referencia cruzada errónea del Excel.
+ */
+export function calculateAcuiculturaDosage(
+  product: AcuiculturaProduct,
+  context: {
+    biomasaKg: number;
+    porcentajeConsumoDia: number;
+    volumenAguaTon: number;
+    numeroPeces: number;
+    diasTratamiento: number;
+    especie?: AcuiculturaEspecie;
+  },
+): DosageResult {
+  const dosis = safe(product.dosis);
+  const D = safe(context.diasTratamiento);
+  const biomasa = safe(context.biomasaKg);
+  const porcentajeConsumo = safe(context.porcentajeConsumoDia);
+  const volumenAgua = safe(context.volumenAguaTon);
+  const numeroPeces = safe(context.numeroPeces);
+
+  let K = 0;
+  let unidad = 'g';
+  let formulaTexto = '';
+
+  switch (product.tipoCalculo) {
+    case 'dosis_por_alimento':
+      K = biomasa * (porcentajeConsumo / 100) * dosis;
+      unidad = 'g';
+      formulaTexto = `Biomasa (${fmt(biomasa)} kg) x (%Consumo (${porcentajeConsumo}%) / 100) x Dosis (${dosis}) = ${fmt(K)} / día`;
+      break;
+
+    case 'dosis_por_agua_tabletas':
+      K = (volumenAgua / 10) * dosis;
+      unidad = 'tabletas';
+      formulaTexto = `(Volumen agua (${fmt(volumenAgua)} ton) / 10) x Dosis (${dosis}) = ${fmt(K)} / día`;
+      break;
+
+    case 'dosis_por_agua_especie': {
+      const dosisEspecie = context.especie ? safe(DOLICAL_DOSIS_POR_ESPECIE[context.especie] ?? 0) : 0;
+      K = volumenAgua * dosisEspecie;
+      unidad = 'g';
+      formulaTexto = dosisEspecie > 0
+        ? `Volumen agua (${fmt(volumenAgua)} ton) x Dosis según especie (${dosisEspecie} mg/L) = ${fmt(K)}`
+        : 'Selecciona una especie con dosis definida (Tilapia, Cobia o Trucha)';
+      break;
+    }
+
+    case 'dosis_por_pez':
+      K = dosis * numeroPeces;
+      unidad = 'mL';
+      formulaTexto = `Dosis (${dosis}) x ${numeroPeces} peces = ${fmt(K)}`;
+      break;
+
+    case 'dosis_por_agua_superficie': {
+      const base = volumenAgua / 1.5;
+      K = ((base + 4 * Math.sqrt(base) * 1.5) / 10) * dosis;
+      unidad = 'g';
+      formulaTexto = `Superficie estimada del estanque (a partir de ${fmt(volumenAgua)} ton) x Dosis (${dosis}) = ${fmt(K)} / día`;
+      break;
+    }
+  }
+
+  return {
+    cantidadDiaria: K,
+    totalTratamiento: K * D,
+    unidad,
     formulaTexto,
   };
 }

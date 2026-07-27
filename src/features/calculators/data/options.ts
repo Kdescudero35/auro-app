@@ -34,7 +34,7 @@ export const CALCULATOR_OPTIONS: CalculatorOption[] = [
     title: 'Acuicultura',
     description: 'Piscicultura intensiva, biomasa y dosificación de vacunas',
     emoji: '🐟',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'bioseguridad',

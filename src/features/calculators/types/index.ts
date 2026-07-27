@@ -189,6 +189,52 @@ export interface BovinoCalculations {
   totalBovinos: number;
 }
 
+export type AcuiculturaTipoCalculo =
+  | 'dosis_por_alimento'
+  | 'dosis_por_agua_tabletas'
+  | 'dosis_por_agua_especie'
+  | 'dosis_por_pez'
+  | 'dosis_por_agua_superficie';
+
+export type AcuiculturaEspecie =
+  | 'TILAPIA'
+  | 'COBIA'
+  | 'TRUCHA'
+  | 'CACHAMA'
+  | 'SALMON'
+  | 'CAMARON'
+  | 'BAGRE';
+
+export interface AcuiculturaProduct {
+  id: string;
+  nombre: string;
+  formaAdministracion: 'En agua' | 'Premix' | 'Inyectable/Oral';
+  diasTratamientoSugeridos: string;
+  dosis: number;
+  tipoCalculo: AcuiculturaTipoCalculo;
+  presentaciones: string[];
+  principioActivo: string;
+  composicionGarantizada: string;
+  indicacionesUso: string;
+  dosisTexto: string;
+  tiempoRetiro: string;
+  precauciones: string;
+  contraindicaciones: string;
+}
+
+export interface AcuiculturaInput {
+  biomasaKg: number;
+  porcentajeConsumoDia: number;
+  volumenAguaTon: number;
+  numeroPeces: number;
+  diasTratamiento: number;
+}
+
+export interface AcuiculturaCalculations {
+  consumoAlimentoKgDia: number;
+  totalPeces: number;
+}
+
 export interface CalculatorOption {
   id: string;
   title: string;

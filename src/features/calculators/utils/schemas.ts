@@ -54,6 +54,16 @@ export const bovinoSchema = z.object({
 
 export type BovinoFormValues = z.infer<typeof bovinoSchema>;
 
+export const acuiculturaSchema = z.object({
+  biomasaKg: positiveNumber('Biomasa').max(1_000_000, 'Valor demasiado alto').optional(),
+  porcentajeConsumoDia: positiveNumber('% Consumo/día').max(100, 'Máximo 100%').optional(),
+  volumenAguaTon: positiveNumber('Volumen de agua').max(100_000, 'Valor demasiado alto').optional(),
+  numeroPeces: positiveInt('Número de peces').max(10_000_000, 'Valor demasiado alto').optional(),
+  diasTratamiento: positiveInt('Días de tratamiento').max(700, 'Máximo 700 días').optional(),
+});
+
+export type AcuiculturaFormValues = z.infer<typeof acuiculturaSchema>;
+
 export const quotationClientSchema = z.object({
   clientName: z
     .string()

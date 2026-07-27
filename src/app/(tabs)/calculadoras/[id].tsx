@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { AcuiculturaScreen } from '@features/calculators/screens/AcuiculturaScreen';
 import { GallinaPosturaScreen } from '@features/calculators/screens/GallinaPosturaScreen';
 import { GanaderiaScreen } from '@features/calculators/screens/GanaderiaScreen';
 import { PolloEngordeScreen } from '@features/calculators/screens/PolloEngordeScreen';
@@ -31,6 +32,10 @@ export default function CalculadoraDetalle(): JSX.Element {
 
   if (id === 'ganaderia') {
     return <GanaderiaScreen />;
+  }
+
+  if (id === 'acuicultura') {
+    return <AcuiculturaScreen />;
   }
 
   return (
