@@ -1,14 +1,17 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { JSX, useEffect, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { Header } from '@features/shared/components/Header';
+import { MaintenanceScreen } from '@features/shared/components/MaintenanceScreen';
+import { useAppKillSwitch } from '@hooks/useAppKillSwitch';
 import { useQuotationStore } from '@store/quotationStore';
 import { useThemeStore } from '@store/themeStore';
 import { palette } from '@theme/colors';
@@ -36,6 +39,13 @@ export default function RootLayout(): JSX.Element {
     setReady(true);
   }, []);
 
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
+      focusManager.setFocused(state === 'active');
+    });
+    return () => subscription.remove();
+  }, []);
+
   if (!ready) return <></>;
 
   return (
@@ -57,6 +67,16 @@ export default function RootLayout(): JSX.Element {
 function ThemedShell({ onReset }: { onReset: () => void }): JSX.Element {
   const scheme = useThemeStore((s) => s.scheme);
   const colors = palette[scheme];
+  const killSwitch = useAppKillSwitch();
+
+  if (killSwitch.status === 'blocked') {
+    return (
+      <>
+        <StatusBar style="light" />
+        <MaintenanceScreen message={killSwitch.message} />
+      </>
+    );
+  }
 
   return (
     <>
